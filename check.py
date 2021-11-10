@@ -2,7 +2,7 @@
 
 import os
 from logging import _nameToLevel
-from typing import Any, Dict
+from typing import Dict
 
 import dotenv
 import requests
@@ -22,7 +22,7 @@ logger.debug('Logger configured: {{"name":%s,"level":%s,"host":%s,"port":%s}}',
              LOGGING_HOST,LOGGING_LEVEL,LOGGING_HOST,LOGGING_PORT)
 
 
-def load_config():
+def load_config() -> Dict:
     """Load the service configuration from config.yml file"""
     try:
         logger.debug('Opening configuration file: %s', CONFIG_PATH)
@@ -35,7 +35,7 @@ def load_config():
     return config
 
 
-def is_online(service, check_data):
+def is_online(service, check_data) -> bool:
     """Check if a service is online by sending a health check request"""
 
     logger.debug('Checking status of service {%s}',service)
@@ -74,11 +74,13 @@ def is_online(service, check_data):
     return True
 
 
-def main():
+def main() -> None:
     """Main function of health check script"""
 
     config = load_config()
     scheduler = CronSchedule()
+    scheduler.add_task('Scheduler','0 * * * *',logger.debug,
+                       'Health-check scheduler is running')
 
     service_count = len(config['services'])
     for service in config['services']:
@@ -96,7 +98,10 @@ def main():
             service_count -= 1
 
     logger.info('Started health-checker on (%d) services', service_count)
-    scheduler.start()
+    try:
+        scheduler.start(min_schedule_ms=5000)
+    except KeyboardInterrupt:
+        logger.info('Stopping health-checker with keyboard interrupt')
 
 
 if __name__ == '__main__':
