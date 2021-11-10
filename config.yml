@@ -1,0 +1,14 @@
+services:
+  Minecraft_Server:
+    cron: '*/5 * * * *'
+    healthcheck:
+      url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
+      response:
+        expected_body: Online
+        expected_code: 200
+      failure_log_level: CRITICAL
+  # Discord_ChatBot:
+  #   cron: '*/5 * * * *'
+  #   healthcheck:
+  #     url: 
+  #     failure_log_level: ERROR
