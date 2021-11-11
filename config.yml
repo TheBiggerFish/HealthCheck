@@ -4,11 +4,11 @@
 #     url: http://example.com/
 #     expected_response:
 #       # Use only one expected expected response type
-#       # Default expected response type is expected_code: 200
+#       # Default expected response type is code: 200
 #
-#       expected_body: Online
-#       expected_code: 200
-#       expected_json_property:
+#       body: Online
+#       code: 200
+#       json_property:
 #         value: true
 #         keys: 
 #         - status

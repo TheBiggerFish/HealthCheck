@@ -1,6 +1,6 @@
 # HealthCheck
 
-This service can be used to run low-priority scheduled health checks through HTTP/1 GET requests. The results are logged to stdout or SysLog
+This service can be used to run low-priority scheduled health checks through HTTP/1 GET requests. The results are logged to stdout or SysLog by configuration in .env file.
 
 ## Setup to Use Existing Infrastructure
 
@@ -22,7 +22,7 @@ Create *.env* file in directory with following parameters
 * `LOGGING_LEVEL` (log output threshold, e.g. DEBUG,INFO,WARNING)
 
 If `LOGGING_HOST` not provided, logs output to stdout \
-**required*
+**required environment variable*
 
 ---
 Add line to crontab for auto-run on startup \
@@ -30,3 +30,25 @@ Add line to crontab for auto-run on startup \
 
 ---
 Create server configurations in config.yml
+
+```
+Example Service:
+  cron: string*    # Health-check schedule in cron syntax
+  healthcheck:
+    url: string*    # URL to direct HTTP GET request
+    failure_log_level: string*    # Level of log entry upon health check failure 
+                        (e.g. WARN,ERROR,CRITICAL)
+    expected_response: 
+      # Use only one expected expected response type
+      # Default expected response type is code: 200
+      body: string    # HTTP response text body
+      code: int    # HTTP response code
+      json_property:
+        value: any    # Expected value of provided JSON field in HTTP response
+        keys:    
+          # List of JSON keys to access expected JSON field and compare value
+          (e.g. json['status']['online'] == value)
+        - key1
+        - key2
+```
+**required field*
