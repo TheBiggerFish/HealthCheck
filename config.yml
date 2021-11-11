@@ -6,10 +6,10 @@
 #       # Use only one expected expected response type
 #       # Default expected response type is code: 200
 #
-#       body: Online
 #       code: 200
+#       body: Online
 #       json_property:
-#         value: true
+#         value: 1  # Use 0/1 for boolean values
 #         keys: 
 #         - status
 #         - online
