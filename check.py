@@ -70,7 +70,7 @@ def is_online(service, check_data) -> bool:
             service, response.status_code)
         return False
 
-    logger.debug('Health-check passed for service {%s}',service)
+    logger.info('Health-check passed for service {%s}',service)
     return True
 
 
