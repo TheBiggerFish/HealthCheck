@@ -43,31 +43,58 @@ def is_online(service, check_data) -> bool:
 
     response = requests.get(check_data['url'])
 
-    if 'response' in check_data:
-        if 'expected_code' in check_data['response'] and \
-                response.status_code != check_data['response']['expected_code']:
-            logger.log(failure_level,'Health-check failed for service {%s}, '\
-                'received unexpected status code {%d}',
-                service, response.status_code)
-            return False
+    log_health_failure = lambda reason, *args: \
+        logger.log(failure_level,'Health-check failed for service {%s},' + reason, service, *args)
 
-        if 'body' in check_data['response'] and \
-                response.text != check_data['response']['body']:
-            logger.log(failure_level,'Health-check failed for service {%s}, '\
-                'received unexpected response body {%d}',
-                service, response.text)
-            return False
+
+    if 'expected_response' in check_data:
+        expected = check_data['expected_response']
+        if 'code' in expected:
+            logger.debug('Checking expected_response code of service {%s}', service)
+
+            if response.status_code != expected['code']:
+                log_health_failure('received unexpected status code {%d}',response.status_code)
+                return False
+
+        if 'body' in expected:
+            logger.debug('Checking expected_response body of service {%s}', service)
+
+            if response.text != expected['body']:
+                log_health_failure('received unexpected response body "%s"',response.text)
+                return False
+
+        if 'json_property' in expected:
+            logger.debug('Checking expected_response json_property of service {%s}', service)
+
+            log_key_error = lambda key: \
+                log_health_failure('unable to access json_property using provided key {%s}',key)
+
+            json = response.json()
+            for key in expected['json_property']['keys']:
+                if not isinstance(json,(dict,list)):
+                    log_key_error(key)
+                    return False
+                if isinstance(json,list):
+                    if isinstance(key,str):
+                        log_key_error(key)
+                        return False
+                    if isinstance(key,int) and not 0 <= key < len(json):
+                        log_key_error(key)
+                        return False
+                elif key not in json:
+                    log_key_error(key)
+                    return False
+                json = json[key]
+            if json != expected['json_property']['value']:
+                log_health_failure('received unexpected json_property value {%s}',str(json))
+                return False
 
         if response.status_code != 200:
-            logger.log(failure_level,'Health-check failed for service {%s}, '\
-                'received unexpected status code {%d}',
-                service, response.status_code)
+            log_health_failure('received unexpected status code {%d}',response.status_code)
             return False
 
     elif response.status_code != 200:
-        logger.log(failure_level,'Health-check failed for service {%s}, '\
-            'received unexpected status code {%d}',
-            service, response.status_code)
+        log_health_failure('received unexpected status code {%d}',response.status_code)
         return False
 
     logger.info('Health-check passed for service {%s}',service)
@@ -79,7 +106,7 @@ def main() -> None:
 
     config = load_config()
     scheduler = CronSchedule()
-    scheduler.add_task('Scheduler','0 * * * *',logger.debug,
+    scheduler.add_task('Scheduler','* * * * *',logger.debug,
                        'Health-check scheduler is running')
 
     service_count = len(config['services'])
@@ -99,7 +126,7 @@ def main() -> None:
 
     logger.info('Started health-checker on (%d) services', service_count)
     try:
-        scheduler.start(min_schedule_ms=5000)
+        scheduler.start(min_schedule_ms=500)
     except KeyboardInterrupt:
         logger.info('Stopping health-checker with keyboard interrupt')
 
