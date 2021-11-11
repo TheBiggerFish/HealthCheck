@@ -1,14 +1,22 @@
+# Example_Server:
+#   cron: '0 * * * *'
+#   healthcheck:
+#     url: http://example.com/
+#     expected_response:
+#       # Use only one expected expected response type
+#       # Default expected response type is expected_code: 200
+#
+#       expected_body: Online
+#       expected_code: 200
+#       expected_json_property:
+#         value: true
+#         keys: 
+#         - status
+#         - online
+
 services:
   Minecraft_Server:
     cron: '*/5 * * * *'
     healthcheck:
       url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
-      response:
-        expected_body: Online
-        expected_code: 200
       failure_log_level: CRITICAL
-  # Discord_ChatBot:
-  #   cron: '*/5 * * * *'
-  #   healthcheck:
-  #     url: 
-  #     failure_log_level: ERROR
