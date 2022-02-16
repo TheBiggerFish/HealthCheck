@@ -21,10 +21,10 @@ from service import Service
 
 dotenv.load_dotenv()
 CONFIG_PATH = os.getenv('CONFIG_PATH')
-LOGGING_HOST = os.getenv('LOGGING_HOST')
-LOGGING_PORT = os.getenv('LOGGING_PORT')
 LOGGING_NAME = os.getenv('LOGGING_NAME')
-LOGGING_LEVEL = os.getenv('LOGGING_LEVEL')
+LOGGING_HOST = os.getenv('LOGGING_HOST')
+LOGGING_PORT = os.getenv('LOGGING_PORT', 514)
+LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
 logger = Logger(LOGGING_NAME, LOGGING_HOST,
                 LOGGING_PORT, LOGGING_LEVEL)
 logger.debug('Logger configured: {{"name":%s,"level":%s,"host":%s,"port":%s}}',
