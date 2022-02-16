@@ -22,9 +22,9 @@ setuptools.setup(
     ],
     install_requires=[
         'PyYAML',
-        'python-crontab',
         'python-dotenv',
-        'py-cron-schedule',
+        'requests',
+        'croniter',
     ],
     python_requires='>=3.8',
 )
