@@ -1,22 +1,22 @@
 # Example_Server:
 #   cron: '0 * * * *'
-#   healthcheck:
-#     url: http://example.com/
-#     expected_response:
-#       # Use only one expected expected response type
-#       # Default expected response type is code: 200
+#   url: http://example.com/
+#   response:
+#     # Use only one expected response type
+#     # Default expected response type is `code: 200`
 #
-#       code: 200
-#       body: Online
-#       json_property:
-#         value: 1  # Use 0/1 for boolean values
-#         keys: 
-#         - status
-#         - online
+#     code: 200
+#     body: Online
+#     json_body:
+#       value: 1  # Use 0/1 for boolean values
+#       keys: 
+#       - status
+#       - online
+#   alert:
+#     email: user@example.com
 
 services:
   Minecraft_Server:
-    cron: '*/5 * * * *'
-    healthcheck:
-      url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
-      failure_log_level: CRITICAL
+    cron: '* * * * *'
+    url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
+    failure_log_level: CRITICAL
