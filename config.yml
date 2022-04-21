@@ -1,4 +1,5 @@
 # Example_Server:
+#   type: http | minecraft
 #   cron: '0 * * * *'
 #   url: http://example.com/
 #   response:
@@ -17,6 +18,8 @@
 
 services:
   Minecraft_Server:
+    type: minecraft
     cron: '* * * * *'
-    url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
+    # url: https://api.mcsrvstat.us/simple/mc.haddock.cloud:9999
+    ip: play.wynncraft.com
     failure_log_level: CRITICAL
