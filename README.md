@@ -26,7 +26,9 @@ If `LOGGING_HOST` not provided, logs output to stdout \
 
 ---
 Add line to crontab for auto-run on startup \
-```@reboot sudo /usr/local/bin/python3 /path/to/check.py &```
+```@reboot sudo /usr/local/bin/python3 /path/to/main.py &```
+
+Define `$HOSTNAME` as an environment variable representing the local hostname to be logged
 
 ---
 Create server configurations in config.yml

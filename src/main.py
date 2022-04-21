@@ -8,7 +8,7 @@
 
 import os
 import time
-from typing import Dict, List
+from typing import Any, Dict, List, Optional, Type
 
 import dotenv
 import yaml
@@ -17,7 +17,9 @@ from fishpy.utility.network import online
 
 from exceptions import ConfigFileException
 from scheduler import Scheduler
-from service import Service
+from services import service_mapping
+from src.exceptions import ServiceException
+from src.services.service import Service
 
 dotenv.load_dotenv()
 CONFIG_PATH = os.getenv('CONFIG_PATH')
@@ -25,8 +27,8 @@ LOGGING_NAME = os.getenv('LOGGING_NAME')
 LOGGING_HOST = os.getenv('LOGGING_HOST')
 LOGGING_PORT = os.getenv('LOGGING_PORT', 514)
 LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
-logger = Logger(LOGGING_NAME, LOGGING_HOST,
-                LOGGING_PORT, LOGGING_LEVEL)
+logger = Logger(LOGGING_NAME, LOGGING_LEVEL,
+                LOGGING_HOST, LOGGING_PORT)
 logger.debug('Logger configured: {{"name":%s,"level":%s,"host":%s,"port":%s}}',
              LOGGING_HOST, LOGGING_LEVEL, LOGGING_HOST, LOGGING_PORT)
 
@@ -54,25 +56,38 @@ def load_config() -> Dict:
 
 
 def main():
+    # TODO: switch to a service registration system which allows different types of services
     while not online(logger):
         logger.error('Failed to connect, waiting 60 seconds')
         time.sleep(60)
 
     config = load_config()
-    services: List[Service] = []
-    for service_name in config['services']:
-        service = Service(service_name, config['services'][service_name])
-        logger.debug('Checking that service "%s" has a url provided', service)
-        if service.is_valid():
-            logger.info('Adding service "%s" to serve-list with url "%s" on cron schedule (%s), logging at level %s on failure',
-                        service, service.url, service.cron_expression, service.failure_log_level_name)
-            services.append(service)
-        else:
-            logger.warning('Skipping service "%s" due to lack of url', service)
-    logger.info('Ready to serve %d services', len(services))
+    services: dict[str, dict[str, Any]] = config['services']
+    scheduler = Scheduler(logger=logger)
 
-    scheduler = Scheduler(services)
-    scheduler.serve(logger)
+    for service_name, service_config in services.items():
+        service_type: Optional[str] = service_config.get('type')
+        if service_type is None:
+            logger.warning('Skipping service "%s" due to missing service type',
+                           service_name)
+            continue
+
+        service_class: Type[Service] = service_mapping.get(service_type)
+        if service_class is None:
+            logger.warning('Skipping service "%s" due to unknown service type',
+                           service_name)
+            continue
+
+        service = service_class(service_name, service_config, logger=logger)
+
+        logger.debug('Attempting to register service "%s"', service)
+        registered = scheduler.register(service)
+
+        if not registered:
+            logger.warning('Skipping service "%s" due to invalid config',
+                           service_name)
+
+    scheduler.serve()
 
 
 if __name__ == '__main__':
