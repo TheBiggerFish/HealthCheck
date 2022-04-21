@@ -34,21 +34,22 @@ Define `$HOSTNAME` as an environment variable representing the local hostname to
 Create server configurations in config.yml
 
 ```
-Example Service:
-  url: string    # URL to direct HTTP GET request (required)
+Service_Name:
+  type: string    # Type of health check to perform (http | minecraft)
   cron: string    # Health-check schedule in cron syntax (default: '0 * * * *')
-  failure_log_level: string    # Level of log entry upon health check failure 
-                      (e.g. WARN,ERROR,CRITICAL)
-  response: 
-    # Use only one expected expected response type
+  url: string     # URL to direct health checks to
+  response:
+    # Use only one expected response type
     # Default expected response type is `code: 200`
+    code: int
     body: string    # HTTP response text body
-    code: int    # HTTP response code
-    json_property:
+    json_body:
       value: any    # Expected value of provided JSON field in HTTP response
-      keys:    
+      keys:
         # List of JSON keys to access expected JSON field and compare value
         (e.g. json['status']['online'] == value)
       - key1
       - key2
+  alert:
+    email: string   # Email address of user to alert in event of health check failure
 ```
